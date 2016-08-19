@@ -10,21 +10,33 @@ var fields = {
     type: "text",
     label: "Name",
     placeholder: "Your full name",
+    validator: {
+      error: "You must provide a name for your club."
+    }
   },
   location: {
     type: LocationSelector,
     label: "Location",
-    placeholder: "City, Country"    
+    placeholder: "City, Country",
+    validator: {
+      error: "You must provide a location for your club."
+    }
   },
   occupation: {
     type: "text",
     label: "Occupation",
-    placeholder: "Student or professional at ..."
+    placeholder: "Student or professional at ...",
+    validator: {
+      error: "Please let us know what your occupation is."
+    }
   },
   regionalCoordinator: {
     type: "choiceGroup",
     label: "Are you currently working with a Regional Coordinator?",
     options: [ " Yes", " No" ],
+    validator: {
+      error: "You must say whether or not you're working with a regional coordinator."
+    }
   },
   coordinatorName: {
     type: "text",
@@ -35,13 +47,29 @@ var fields = {
       name: "regionalCoordinator",
       value: " Yes"
     },
-    // this field does not count towards progress
-    metered: false
+    // this field does not count towards total form completion
+    metered: false,
+    validator: {
+      error: "If you work with a Regional Coordinator, you must indicate who they are."
+    }
   },
   hostReason: {
     type: "text",
     label: "Why do you want to host a Mozilla Club?",
-    placeholder: "Describe what you want to achieve and what your goals are. Minimum length 50 words."
+    placeholder: "Describe what you want to achieve and what your goals are. Minimum length 50 words.",
+    validator: [
+      {
+        error: "You must explain the reason for applying."
+      },
+      {
+        validate: function(value) {
+          if (!value) return false;
+          var count = value.trim().split(' ').length;
+          return count < 45;
+        },
+        error: "Please explain the reason for applying using 45 words or more."
+      }
+    ]
   },
   howDidYouHear: {
     type: Select,
@@ -56,47 +84,16 @@ var fields = {
     other: {
       type: "text",
       placeholder: "Let us know how  you heard about becoming a club captain"
-    }
-  }
-};
-
-var validators = {
-  name: {
-    error: "You must provide a name for your club."
-  },
-  location: {
-    error: "You must provide a location for your club."
-  },
-  occupation: {
-    error: "Please let us know what your occupation is."
-  },
-  regionalCoordinator: {
-    error: "You must say whether or not you're working with a regional coordinator."
-  },
-  coordinatorName: {
-    error: "If you work with a Regional Coordinator, you must indicate who they are."
-  },
-  hostReason: [
-    {
-      error: "You must explain the reason for applying."
     },
-    {
-      validate: function(value) {
-        if (!value) return false;
-        var count = value.trim().split(' ').length;
-        return count < 45;
-      },
-      error: "Please explain the reason for applying using 45 words or more."
+    validator: {
+      error: "Please tell us how you heard about this program."
     }
-  ],
-  howDidYouHear: {
-    error: "Please tell us how you heard about this program."
   }
 };
 
 var StepOne = React.createClass({
   render: function() {
-    return <Formed {...{ fields, validators, onChange: this.props.onChange, onProgress: this.props.onProgress }} />;
+    return <Formed {...{ fields, onChange: this.props.onChange, onProgress: this.props.onProgress }} />;
   }
 });
 

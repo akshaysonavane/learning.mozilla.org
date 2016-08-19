@@ -132,7 +132,7 @@ var Formed = React.createClass({
 
   validateField: function(name, errors, errorElements) {
     var value = this.state[name];
-    var validators = this.props.validators[name];
+    var validators = this.props.fields[name].validator;
     if (!validators) {
       return;
     }
