@@ -46,7 +46,7 @@ var Formed = React.createClass({
         label = field.label,
         formfield = null,
         hasError = this.state.errorElements.indexOf(name) !== -1,
-        inputClass = hasError ? 'error' : null;
+        inputClass = hasError ? 'error' : '';
 
     var common = {
       key: name + 'field',
@@ -56,7 +56,7 @@ var Formed = React.createClass({
     };
 
     var shouldHide = false;
-    if (field.hidden) {
+    if (field.controller) {
       var controller = field.controller.name;
       var controlValue = field.controller.value;
       shouldHide = this.state[controller] !== controlValue;
@@ -66,7 +66,11 @@ var Formed = React.createClass({
       label = <label key={name + 'label'} hidden={shouldHide}>{label}</label>
     } else { label = null; }
 
-    if (ftype === "undefined" || Type === "text") {
+    if (!label) {
+      inputClass += " nolabel";
+    }
+
+  if (ftype === "undefined" || Type === "text") {
       formfield = <input className={inputClass} type={Type? Type : "text"} {...common} hidden={shouldHide}/>
     }
 

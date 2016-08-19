@@ -42,7 +42,6 @@ var fields = {
     type: "text",
     label: "What is your Regional Coordinator's name?",
     placeholder: "Name",
-    hidden: true,
     controller: {
       name: "regionalCoordinator",
       value: " Yes"
@@ -81,12 +80,21 @@ var fields = {
       { value: 'Social media', label: 'Social media' },
       { value: 'other', label: 'other' }
     ],
-    other: {
-      type: "text",
-      placeholder: "Let us know how  you heard about becoming a club captain"
-    },
     validator: {
       error: "Please tell us how you heard about this program."
+    }
+  },
+  howDidYouHearOther: {
+    type: "text",
+    placeholder: "Let us know how you heard about becoming a club captain",
+    controller: {
+      name: "howDidYouHear",
+      value: "other"
+    },
+    // this field does not count towards total form completion
+    metered: false,
+    validator: {
+      error: "Please explain how you heard about Mozilla clubs."
     }
   }
 };
