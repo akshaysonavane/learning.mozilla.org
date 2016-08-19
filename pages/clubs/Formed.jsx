@@ -3,44 +3,21 @@ var ReactDOM = require('react-dom');
 var LocationSelector = require('../../components/LocationSelector.jsx');
 var Select = require('react-select');
 
-
 var Formed = React.createClass({
+
   getInitialState: function() {
-    console.log(this.props);
     var initial = {};
     var fields = this.props.fields || {};
-    for (name in fields) { initial[name] = null; }
+    this.progressFields = [];
+    for (name in fields) {
+      initial[name] = null;
+      if (fields[name].metered == true) {
+        this.progressFields.push(name);
+      }
+    }
+    initial.errors = [];
+    initial.errorElements = [];
     return initial;
-  },
-
-  getTotal: function() {
-    var progressFields = this.props.progressFields || [];
-    return progressFields.length;
-  },
-
-  getFilled: function() {
-    var state = this.state;
-    var optional = this.props.optional || [];
-    // get the number of required fields that have a value filled in.
-    return progressFields.reduce(function(a,b) {
-      b = state[b];
-      // A field has a value if it's not null, falsey, an empty array, and the
-      // field is not optional. In any of these cases, this field doesn't count
-      // (and so reduces by adding 0 to the running tally, rather than 1).
-      b = b===null? 0 : b===false? 0 : b.length===0 ? 0 : optional.indexOf(b)>-1 ? 0 : 1;
-      return a + b;
-    }, 0);
-  },
-
-  setStateAsChange: function(newState) {
-    this.setState(newState, () => {
-      if (this.props.onChange) {
-        this.props.onChange(newState);
-      }
-      if (this.state.errors && this.state.errors.length>0) {
-        this.validates();
-      }
-    });
   },
 
   render: function() {
@@ -52,11 +29,24 @@ var Formed = React.createClass({
     );
   },
 
+  update: function() {
+    var state = this.state;
+    // get the number of required fields that have a value filled in.
+    var reduced = progressFields.reduce(function(a,b) {
+      b = state[b];
+      return a + this.hasFieldValue(b)? 1 : 0;
+    }, 0);
+    var total = this.progressFields.length;
+    return reduces/total;
+  },
+
   formFields: function(name, field) {
     var Type = field.type,
         ftype = typeof Type,
         label = field.label,
-        formfield = null;
+        formfield = null,
+        hasError = this.state.errorElements.indexOf(name) !== -1,
+        inputClass = hasError ? 'error' : null;
 
     var common = {
       key: name + 'field',
@@ -77,21 +67,21 @@ var Formed = React.createClass({
     } else { label = null; }
 
     if (ftype === "undefined" || Type === "text") {
-      formfield = <input type={Type? Type : "text"} {...common} hidden={shouldHide}/>
+      formfield = <input className={inputClass} type={Type? Type : "text"} {...common} hidden={shouldHide}/>
     }
 
     if (Type === "choiceGroup") {
       var choices = field.options;
       formfield = <div className={Type} key={common.key}>{
         choices.map(value => {
-          return <div><input type="radio" name={name} value={value} checked={this.state[name] === value} onChange={common.onChange}/>{value}</div>;
+          return <div><input className={inputClass} type="radio" name={name} value={value} checked={this.state[name] === value} onChange={common.onChange}/>{value}</div>;
         })
       }
       </div>;
     }
 
     if (ftype === "function") {
-      formfield = <Type {...field} {...common}/>
+      formfield = <Type {...field} {...common} className={inputClass} />
     }
 
     return <fieldset key={name + 'set'}>{ [label, formfield] }</fieldset>;
@@ -100,7 +90,18 @@ var Formed = React.createClass({
   update: function(fieldname, e) {
     var state = {};
     state[fieldname] = e.target? e.target.value : e;
-    this.setStateAsChange(state);
+    this.setStateAsChange(fieldname, state);
+  },
+
+  setStateAsChange: function(fieldname, newState) {
+    this.setState(newState, () => {
+      if (this.props.onChange) {
+        this.props.onChange(newState);
+      }
+      //if (this.state.errors && this.state.errors.length>0) {
+        this.validates();
+      //}
+    });
   },
 
   getData: function() {
@@ -116,12 +117,61 @@ var Formed = React.createClass({
     var errors = [];
     var errorElements = [];
 
+    var fields = this.props.fields || {};
+    for (name in fields) {
+      this.validateField(name, errors, errorElements);
+    }
+
     this.setState({
       errors: errors,
       errorElements: errorElements
     });
 
     return !errors.length;
+  },
+
+  validateField: function(name, errors, errorElements) {
+    var value = this.state[name];
+    var validators = this.props.validators[name];
+    if (!validators) {
+      return;
+    }
+    if (!validators.forEach) {
+      validators = [validators];
+    }
+    validators.forEach(validator => {
+      var err = false;
+      if (validator.validate) {
+        err = validator.validate(value);
+      } else {
+        err = !this.hasFieldValue(this.state[name]);
+      }
+      if (err && this.passesControl(name)) {
+        errors.push(validator.error);
+        if (errorElements.indexOf(name)===-1) {
+          errorElements.push(name);
+        }
+      }
+    });
+  },
+
+  // check whether this field "counts":
+  // - uncontrolled fields always count
+  // - controlled fields only count if their controller has the appropriate value
+  passesControl: function(name) {
+    var field = this.props.fields[name]
+    var control = field.controller;
+    if (!control) return true;
+    return this.state[control.name] === control.value;
+  },
+
+  /**
+   *  A field has a value if it's not null, falsey, an empty array, and the
+   * field is not optional. In any of these cases, this field doesn't count
+   * (and so reduces by adding 0 to the running tally, rather than 1).
+   */
+  hasFieldValue: function(value) {
+    return value===null ? false : value===false? false : value.length===0 ? false : true;
   },
 
   getErrorClass: function(field) {
