@@ -115,6 +115,8 @@ var routeElements = Object.keys(pages).map(function(path) {
   return <Route path={path} component={pages[path]} key={path}/>;
 });
 
+var makerPartyLocales = ['de', 'fr', 'es', 'pl', 'it', 'nl', 'cs', 'bg'];
+
 // <Redirect> elements
 var redirectElements = Object.keys(redirects).map(function(path) {
   return <Redirect from={path} to={redirects[path]} key={path} />;
@@ -150,7 +152,15 @@ function buildRoutes() {
       var newkey = locale + "/" + key;
       localeURLs.push(newkey);
     });
+  });
 
+  makerPartyLocales.forEach((locale) => {
+    localeURLs.push(`${locale}/events`);
+    routes.push(
+      <Route key={locale} path={locale} component={require('../components/page.jsx')}>
+        <Route path="events" component={require('../pages/events.jsx')} />
+      </Route>
+    );
   });
 
   return {
