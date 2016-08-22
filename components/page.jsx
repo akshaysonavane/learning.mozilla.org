@@ -136,7 +136,7 @@ var Page = React.createClass({
     }
 
     var pageClassName = this.getCurrentClassName();
-    var className = "page container-fluid " + pageClassName;
+    var className = "page container-fluid sidebar-hidden " + pageClassName;
 
     return (
       <div>
