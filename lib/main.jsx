@@ -2,27 +2,29 @@ var React = require('react');
 var ReactRouter = require('react-router');
 var Router = ReactRouter.Router;
 
-var ga = require('react-ga');
+var config = require('../config/config');
+var generator = require('./page-generator.jsx');
 var developerHelp = require('./build/developer-help');
 
-var config = require('../config/config');
-var generator = require('./page-generate.jsx');
-
-var GA_ACCOUNT = process.env.GA_ACCOUNT || 'UA-49796218-20';
+var ga = require('react-ga');
+var GA_ACCOUNT = process.env.GA_ACCOUNT || '';
 var GA_DEBUG = process.env.GA_DEBUG || 'off';
 
+/**
+ * ... FIXME: TODO: document ...
+ */
 function startRunningSite() {
   var pageHolder = document.getElementById('page-holder');
-
-  if (config.ENABLE_PUSHSTATE) {
-    generator.run(Router.HistoryLocation, pageHolder);
-  } else {
-    generator.run(Router.RefreshLocation, pageHolder);
-  }
+  var location = config.ENABLE_PUSHSTATE ? Router.HistoryLocation : Router.RefreshLocation;
+  generator.run(location, pageHolder);
 }
 
+// flip the "using JS" switch and perform GA accordingly
 if (config.IN_STATIC_SITE) {
-  ga.initialize(GA_ACCOUNT, { debug: GA_DEBUG === 'on' });
+  if (GA_ACCOUNT) {
+    ga.initialize(GA_ACCOUNT, { debug: GA_DEBUG === 'on' });
+  }
+
   if (window.ENABLE_JS) {
     if (!window.Intl) {
       require.ensure(['intl'], function(require) {
@@ -32,7 +34,9 @@ if (config.IN_STATIC_SITE) {
     } else {
       startRunningSite();
     }
-  } else {
+  }
+
+  else if (GA_ACCOUNT) {
     ga.pageview(window.location.pathname);
     ga.event({
       category: 'JavaScript',
@@ -42,6 +46,7 @@ if (config.IN_STATIC_SITE) {
   }
 }
 
+// Add in the developer ribbon when not in production mode.
 if (process.env.NODE_ENV !== 'production') {
   developerHelp();
 }

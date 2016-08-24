@@ -7,18 +7,16 @@ var Router = ReactRouter.Router;
 var RoutingContext = ReactRouter.RoutingContext;
 var match = ReactRouter.match;
 
-var ga = require('react-ga');
-
 var routeData = require('./routes.jsx');
-var locales = require('../dist/locales.json');
-
 var Page = require('../components/page.jsx');
 
+var locales = require('../dist/locales.json');
 var ReactIntl = require('react-intl');
 var IntlProvider = ReactIntl.IntlProvider;
 var addLocaleData = ReactIntl.addLocaleData;
 var currentLocale;
 
+var ga = require('react-ga');
 var assign = require('object-assign');
 
 // utility function: content for redirect pages

@@ -5,34 +5,15 @@ var fs = require('fs');
 var Path = require('path');
 
 var config = require('../../config/config');
-var generator = require('../page-generate.jsx');
+var generator = require('../page-generator.jsx');
 var OptimizelySubdomain = require('../../components/optimizely-subdomain.jsx');
 var Optimizely = require('../../components/optimizely.jsx');
 var ReactIntl = require('react-intl');
 var Pontoon = require('../../components/pontoon.jsx');
+var featureDetect = require('./feature-detect');
 
 // FIXME: this really needs to come from somewhere, not be a magic variable
 var CSS_FILENAME = "styles.css";
-
-// This isn't actually called in node, it's stringified and plopped in
-// a script tag in the page header. It's basically an extremely simple
-// stand-in for Modernizr, but if it becomes more complex we should think
-// about actually migrating to that library.
-//
-// Modernizr code borrowed:
-//
-// * cors (needed to reach teach-api)
-function featureDetect() {
-  var safeMode = /[?&]safemode=on/i.test(window.location.search);
-  var cors = 'XMLHttpRequest' in window && 'withCredentials' in new XMLHttpRequest();
-
-  if (!safeMode && cors) {
-    document.documentElement.setAttribute('class', '');
-    window.ENABLE_JS = true;
-  } else {
-    window.ENABLE_JS = false;
-  }
-}
 
 function generateWithPageHTML(url, options, pageHTML) {
   options = _.defaults(options || {}, {
