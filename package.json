@@ -16,8 +16,6 @@
     "node": "^4.4.1"
   },
   "scripts": {
-    "app": "npm run prep && node app.js",
-    "build": "npm run prep",
     "copy-static-files": "run-s copy:img copy:vendor",
     "copy:img": "shx mkdir -p dist/img && shx cp -r img/* dist/img",
     "copy:vendor": "run-s copy:vendor:bootstrap copy:vendor:font-awesome copy:vendor:tabzilla copy:vendor:mofo-ui",
@@ -30,12 +28,13 @@
     "less": "lessc less/index.less dist/styles.css --source-map=dist/styles.css.map --clean-css=\"--s0\"",
     "lint": "eslint --ext .js --ext .jsx .",
     "lint:fix": "npm run lint -- --fix",
-    "prep": "run-s cleanup copy-static-files lint less l10n webpack",
+    "prep": "run-s cleanup copy-static-files lint less l10n webpack:static webpack",
     "postinstall": "npm run l10n",
-    "start": "npm run app",
+    "start": "npm run prep && node app.js",
     "test": "run-s prep",
     "webpack": "webpack --config ./config/webpack.config.js --progress --colors",
-    "webpack:dev": "webpack-dev-server --config ./config/webpack.config.js --progress --colors --watch"
+    "webpack:dev": "webpack-dev-server --config ./config/webpack.config.js --progress --colors --watch",
+    "webpack:static": "webpack --config ./config/index.static.config.js --progress --colors"
   },
   "dependencies": {
     "babel-cli": "^6.11.4",

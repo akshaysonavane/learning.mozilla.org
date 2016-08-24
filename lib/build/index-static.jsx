@@ -86,26 +86,28 @@ function generateWithPageHTML(url, options, pageHTML) {
   return '<!DOCTYPE html>' + htmlString;
 }
 
-function generate(url, options, cb) {
-  var locale = options.locale || 'en-US';
-  generator.generateStatic(url, locale, function(err, html, metadata) {
-    var pageHTML;
-
-    if (err) return cb(err);
-    try {
-      options = _.extend({ title: metadata.title }, options);
-      pageHTML = generateWithPageHTML(url, options, html);
-    } catch(e) {
-      err = e;
-    }
-    cb(err, url, metadata.title, pageHTML);
-  });
-};
-
 module.exports = {
-  generate: generate,
   CSS_FILENAME: CSS_FILENAME,
   URLS: generator.URLS,
   REDIRECTS: generator.REDIRECTS,
-  routes: generator.routes
+  routes: generator.routes,
+
+  /**
+   * ...documentation goes here TODO: FIXME: ... 
+   */
+  generate: function generate(url, options, cb) {
+    var locale = options.locale || 'en-US';
+    generator.generateStatic(url, locale, function(err, html, metadata) {
+      var pageHTML;
+
+      if (err) return cb(err);
+      try {
+        options = _.extend({ title: metadata.title }, options);
+        pageHTML = generateWithPageHTML(url, options, html);
+      } catch(e) {
+        err = e;
+      }
+      cb(err, url, metadata.title, pageHTML);
+    });
+  }
 };

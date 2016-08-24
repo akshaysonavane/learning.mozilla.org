@@ -10,7 +10,6 @@ var Router = ReactRouter.Router;
 var match = ReactRouter.match;
 var routington = require('routington');
 
-var indexStaticWatcher = require('./lib/build/index-static-watcher').create();
 var PORT = process.env.PORT || 8008;
 var PRODUCTION = (process.env.NODE_ENV === 'production');
 var DIST_DIR = path.join(__dirname, 'dist');
@@ -22,9 +21,10 @@ var WpPageChecker = require('./lib/wp-page-checker');
 var habitat = require('habitat');
 habitat.load('.env');
 
-var indexStatic;
-var router;
+var indexStatic = require('./build/index-static/index-static.bundle');
+var router = React.createElement(Router, {routes: indexStatic.routes});
 var matcher;
+
 var app = express();
 var locale = "";
 var locales = require('./dist/locales.json');
@@ -53,11 +53,6 @@ var urlToRoutePath = function(loc) {
     loc = loc.replace(/^\//, '').replace(/\/$/, '');
   }
   return loc;
-};
-
-var updateIndexStatic = function(newIndexStatic) {
-  indexStatic = newIndexStatic;
-  router = indexStatic ? React.createElement(Router, {routes: indexStatic.routes}) : null;
 };
 
 // make sure the dir we'll be using for static hosting exists.
@@ -270,30 +265,17 @@ app.use(function(req, res, next) {
 });
 
 app.DIST_DIR = DIST_DIR;
-app.updateIndexStatic = updateIndexStatic;
-module.exports = app;
 
-// FIXME: TODO: clean up the whole indexStatic mess
 var startProdApp = function() {
-  console.log([
-    'Production mode enabled. Note that "npm install" is assumed to',
-    'have recently been run with NODE_ENV="production". If this is not',
-    'the case, some or all static assets may be out of date.'
-  ].join('\n'));
-  indexStaticWatcher.build(function(err, newIndexStatic) {
-    if (err) {
-      throw err;
-    }
-
-    console.log('Built server-side bundle.');
-    updateIndexStatic(newIndexStatic);
-    app.listen(PORT, function() {
-      console.log('Listening on port', PORT);
-    });
+  app.listen(PORT, function() {
+    console.log('Listening on port', PORT);
   });
 };
+
+module.exports = app;
 
 if (!module.parent) {
   console.log('Initializing server.');
   startProdApp();
 }
+
